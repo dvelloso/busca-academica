@@ -1,10 +1,9 @@
 # busca-academica
 Projeto desenvolvido na aula de Python no curso de Engenharia de Dados
 
-Lib utilizadas
+Libs Utilizadas
 --------------
-
--> Pandas
--> BibtexParser
--> PyYAML
+- Pandas
+- BibtexParser
+- PyYAML
 
