@@ -1,0 +1,2 @@
+colunas: ['author', 'title', 'abstract', 'year', 'type_publication', 'doi']
+formato_salvar_arquivo: json
