@@ -46,6 +46,12 @@ class BuscaAcademica:
         if self.formato_arquivo == 'json':
             df = df.to_json(orient='split')
             formato_valido = True
+        elif self.formato_arquivo == 'csv':
+            df = df.to_csv()
+            formato_valido = True
+        elif self.formato_arquivo == 'yaml':
+            df = yaml.dump(df)
+            formato_valido = True
 
         if formato_valido:
             arq = open(f'resultados/arquivo.{self.formato_arquivo}', 'w', encoding='utf-8')
