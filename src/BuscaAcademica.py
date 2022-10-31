@@ -6,7 +6,7 @@ import os
 class BuscaAcademica:
     
     def __init__(self):
-        with open('config.yaml', 'r') as f:
+        with open('configuracao/config.yaml', 'r') as f:
             try:
                 self._arquivo_config = yaml.safe_load(f)
                 self._lista_campos = self._arquivo_config['colunas']
@@ -35,6 +35,14 @@ class BuscaAcademica:
 
     def definir_colunas(self, df):
         for coluna in df.columns:
+            if coluna == "ENTRYTYPE":
+                df.rename(
+                    columns={'ENTRYTYPE': 'type_publication'},
+                    inplace=True
+                    )
+                coluna = "type_publication"
+                print('Coluna renomeada')     
+
             if coluna not in self.lista_campos:
                 df = df.drop(coluna, axis=1) # 0.linha 1.coluna
                 #print(f'Coluna excluida: {coluna}')  
@@ -42,7 +50,7 @@ class BuscaAcademica:
         return df  
 
     def exportar_arquivo(self, df):
-        formatoValido = False
+        formato_valido = False
         if self.formato_arquivo == 'json':
             df = df.to_json(orient='split')
             formato_valido = True
@@ -50,7 +58,12 @@ class BuscaAcademica:
             df = df.to_csv()
             formato_valido = True
         elif self.formato_arquivo == 'yaml':
-            df = yaml.dump(df)
+            df = yaml.dump(df.reset_index().to_dict(orient='records'),
+                sort_keys=False, width=72, indent=4,
+                default_flow_style=None)
+            formato_valido = True           
+        elif self.formato_arquivo == 'xml':
+            df = df.to_xml(root_name='bib', row_name='paper')
             formato_valido = True
 
         if formato_valido:
@@ -71,13 +84,4 @@ class BuscaAcademica:
         return self._formato_arquivo
     
 
-if __name__ == "__main__":
-    busca = BuscaAcademica() 
-    
-    df_arq = busca.ler_arquivos()
-    
-    df_col = busca.definir_colunas(df_arq)
-    
-    busca.exportar_arquivo(df_col)
-    print('Arquivo gerado com sucesso')    
     
