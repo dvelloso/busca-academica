@@ -1,53 +1,105 @@
-import pandas as pd
-import bibtexparser
-import yaml
+from src.ArquivoCSV import ArquivoCSV
+from src.ArquivoBib import ArquivoBib
 import os
+import pandas as pd
+import json
+import yaml
 
 class BuscaAcademica:
-    
+
     def __init__(self):
         with open('configuracao/config.yaml', 'r') as f:
             try:
                 self._arquivo_config = yaml.safe_load(f)
                 self._lista_campos = self._arquivo_config['colunas']
                 self._formato_arquivo = self._arquivo_config['formato_salvar_arquivo']
+                self._filtros = self._arquivo_config['filtros']
                 print(f'Parâmetros configuração: {self._arquivo_config}')
             except yaml.YAMLError as exc:
-                print(exc)        
+                print(exc)  
 
-    # função para ler os arquivos
-    def ler_arquivos(self):
-        caminho = "dados/"
-        dir = os.listdir(caminho)
-        print(f'Arquivos listados no diretorio:  {dir}')   
+    def executar_csv(self):
+        
+        arq_csv = ArquivoCSV()
 
-        # df contendo todos os arquivos
-        df_pai = pd.DataFrame()
+        dir = os.listdir('dados/CSV/')
+        print(f'Arquivos CSV listados no diretorio: {dir}')
 
-        for arquivo in dir:
-            with open(f'dados/{arquivo}', encoding='utf8') as bibtex_file:
-                bib_database = bibtexparser.load(bibtex_file)
-                df = pd.DataFrame(bib_database.entries)
-                #dfPai = pd.concat([dfPai, df])
-                df_pai = df_pai.append(df)
-            
-        return df_pai    
+        lista_df_csv_tratados = []
+        # ler e tratar os arquivos
+        for idx, val in enumerate(dir):
+            print(f'Lendo arquivo: dados/CSV/{val} - {idx}')
+            df_tratado = arq_csv.tratar_arquivo(arq_csv.ler_arquivo(val))
+            lista_df_csv_tratados.append(df_tratado)
 
-    def definir_colunas(self, df):
-        for coluna in df.columns:
-            if coluna == "ENTRYTYPE":
-                df.rename(
-                    columns={'ENTRYTYPE': 'type_publication'},
-                    inplace=True
-                    )
-                coluna = "type_publication"
-                print('Coluna renomeada')     
+        # unificar arquivos
+        df_unificado = arq_csv.unificar_arquivos(lista_df_csv_tratados)
+        # print('df_csv_unificado'); print(df_unificado.head)
 
-            if coluna not in self.lista_campos:
-                df = df.drop(coluna, axis=1) # 0.linha 1.coluna
-                #print(f'Coluna excluida: {coluna}')  
+        df_unificado = arq_csv.remover_duplicados(df_unificado)
+        print('df_csv_unificado removido duplicadas'); print(df_unificado.head)
+        
+        return df_unificado
 
-        return df  
+    def executar_bib(self):
+        arq_bib = ArquivoBib(self.lista_campos)
+
+        dir_bib = ('ACM','IEEE','SDC')
+        lista_df_bib_tratados = []
+        for x in dir_bib:
+            dir = os.listdir(f'dados/BIB/{x}/')
+            print(f'Arquivos bib listados no diretorio {x}: {dir}')
+
+            # ler arquivos
+            for idx, val in enumerate(dir):
+                print(f'Lendo arquivo: dados/BIB/{val} - {idx}')
+                df_tratado =  arq_bib.tratar_arquivo(arq_bib.ler_arquivo(f'{x}/{val}'))
+                lista_df_bib_tratados.append(df_tratado)
+
+        # unificar arquivos
+        df_unificado = arq_bib.unificar_arquivos(lista_df_bib_tratados)
+
+        df_unificado = arq_bib.remover_duplicados(df_unificado)
+
+        print('df_csv_unificado removido duplicadas'); print(df_unificado)
+
+        return df_unificado
+
+    def executar_unificado(self, df_csv, df_bib):
+        print('df_unificado_csv -> '); print(df_csv)
+        print('df_unificado_bib -> ');print(df_bib)
+
+        df_unificado_csv_bib = pd.merge(df_csv, df_bib, on='title')
+
+        print('df_unificado_bib_csv -> '); print(df_unificado_csv_bib)
+
+        return df_unificado_csv_bib
+
+    def filtrar(self, df):
+        dict_filtro = json.loads(self.filtros)
+        filtro_query = '###'
+        for filtro in dict_filtro.keys():
+            print(filtro, " = ", dict_filtro[filtro])
+            if filtro == 'sourceid':
+                filtro_query = f'{filtro_query} & sourceid in {dict_filtro[filtro]}' 
+            elif filtro == 'title':               
+                filtro_query = f'{filtro_query} & title in {dict_filtro[filtro]}'
+            elif filtro == 'abstract':               
+                filtro_query = f'{filtro_query} & abstract in {dict_filtro[filtro]}'
+            elif filtro == 'year':               
+                filtro_query = f'{filtro_query} & year in {dict_filtro[filtro]}'
+            elif filtro == 'type_publication':               
+                filtro_query = f'{filtro_query} & type_publication in {dict_filtro[filtro]}'
+            elif filtro == 'doi':               
+                filtro_query = f'{filtro_query} & doi in {dict_filtro[filtro]}'
+            else:
+                raise Exception('Filtro não disponível.')
+
+        filtro_query = filtro_query.replace('### &','')
+        print(filtro_query)    
+        df = df.query(filtro_query)
+
+        return df
 
     def exportar_arquivo(self, df):
         formato_valido = False
@@ -72,10 +124,6 @@ class BuscaAcademica:
             arq.close
 
     @property
-    def lista_campos(self):
-        return self._lista_campos        
-
-    @property
     def arquivo_config(self):
         return self._arquivo_config
 
@@ -83,5 +131,10 @@ class BuscaAcademica:
     def formato_arquivo(self):
         return self._formato_arquivo
     
+    @property
+    def filtros(self):
+        return self._filtros
 
-    
+    @property
+    def lista_campos(self):
+        return self._lista_campos     

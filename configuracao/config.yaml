@@ -1,2 +1,19 @@
 colunas: ['author', 'title', 'abstract', 'year', 'type_publication', 'doi']
 formato_salvar_arquivo: csv
+
+#*******************************************************************
+# exemplo de filtro. Excluir os campos que não fazem parte do filtro
+#*******************************************************************
+# filtros: '{
+#   "sourceid": [28773,20315],
+#   "title": ["title1","title2"], 
+#   "abstract": [""],
+#   "year": [], 
+#   "type_publication: [""], 
+#   "doi": [], 
+# }' 
+
+filtros: '{ 
+  "sourceid": [5800175970]
+}'
+
