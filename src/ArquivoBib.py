@@ -54,28 +54,6 @@ class ArquivoBib:
 
         return df              
 
-    def exportar_arquivo(self, df):
-        formato_valido = False
-        if self.formato_arquivo == 'json':
-            df = df.to_json(orient='split')
-            formato_valido = True
-        elif self.formato_arquivo == 'csv':
-            df = df.to_csv()
-            formato_valido = True
-        elif self.formato_arquivo == 'yaml':
-            df = yaml.dump(df.reset_index().to_dict(orient='records'),
-                sort_keys=False, width=72, indent=4,
-                default_flow_style=None)
-            formato_valido = True           
-        elif self.formato_arquivo == 'xml':
-            df = df.to_xml(root_name='bib', row_name='paper')
-            formato_valido = True
-
-        if formato_valido:
-            arq = open(f'resultados/arquivo.{self.formato_arquivo}', 'w', encoding='utf-8')
-            arq.write(df)
-            arq.close
-
     @property
     def caminho(self):
         return self._caminho
