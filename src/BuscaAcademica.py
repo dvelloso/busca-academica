@@ -1,5 +1,6 @@
 from src.ArquivoCSV import ArquivoCSV
 from src.ArquivoBib import ArquivoBib
+from src.ApiIEEE import ApiIEEE
 import os
 import pandas as pd
 import json
@@ -127,6 +128,29 @@ class BuscaAcademica:
             arq = open(f'resultados/arquivo{tipo}.{self.formato_arquivo}', 'w', encoding='utf-8')
             arq.write(df)
             arq.close
+
+    def executar_api_ieee(self):
+        arg_bib = ArquivoBib(self.lista_campos)
+        api_ieee = ApiIEEE()
+
+        df = api_ieee.pesquisar_artigos()
+        # print(df.head())
+        # self.exportar_arquivo(df,'_temp')
+        df = arg_bib.tratar_arquivo(df, 'teste')
+        df = arg_bib.remover_duplicados(df)
+
+        print('Arquivo ApiIEEE: '); print(df.shape)
+
+        return df
+
+    def unificar_arquivos_bib(self, dfs):
+        arq_bib = ArquivoBib(self.lista_campos)
+
+        # unificar arquivos
+        df_unificado = arq_bib.unificar_arquivos(dfs)
+
+        return df_unificado
+
 
     @property
     def arquivo_config(self):

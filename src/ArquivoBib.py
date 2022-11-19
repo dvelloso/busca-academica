@@ -40,6 +40,13 @@ class ArquivoBib:
                     )
                 coluna = "type_publication"
 
+            if coluna == 'publication_year':
+                df.rename(
+                    columns={'publication_year': 'year'},
+                    inplace=True
+                    )
+                coluna = "year"
+
             if coluna not in self.lista_campos:
                 df = df.drop(coluna, axis=1) # 0.linha 1.coluna
 
