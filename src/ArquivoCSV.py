@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import yaml
 import os
 import json
@@ -10,7 +11,7 @@ class ArquivoCSV:
 
     def ler_arquivo(self, nome_arquivo):
         df = pd.read_csv(f'{self.caminho}/{nome_arquivo}', sep=';', index_col=['Rank'], low_memory=False )
-
+        
         return df
 
     def unificar_arquivos(self, dfs):
@@ -24,7 +25,8 @@ class ArquivoCSV:
 
         return df_pai
 
-    def tratar_arquivo(self, df):
+    def tratar_arquivo(self, df, nome_arquivo):
+
         #eliminar coluna com nulos
         df = df.dropna(axis=1, how='all')
 
@@ -38,6 +40,11 @@ class ArquivoCSV:
 
         #uppercase no campo Title
         df['title'] = df['title'].str.upper()
+
+        # issn: transformar em lista e quebrar em linhas
+        if 'issn' in df.columns:
+            df['issn'] = df['issn'].apply(lambda x: x.split(', ') if x==x else np.nan)
+            df = df.explode('issn')
 
         return df
 

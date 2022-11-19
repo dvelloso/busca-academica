@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import bibtexparser
 import yaml
 import os
@@ -26,7 +27,8 @@ class ArquivoBib:
 
         return df_pai
 
-    def tratar_arquivo(self, df):
+    def tratar_arquivo(self, df, nome_arquivo):
+        
         # lowercase no nome de todos os campos
         df.columns = df.columns.str.lower()
 
@@ -37,13 +39,16 @@ class ArquivoBib:
                     inplace=True
                     )
                 coluna = "type_publication"
-                # print('Coluna renomeada')     
 
             if coluna not in self.lista_campos:
                 df = df.drop(coluna, axis=1) # 0.linha 1.coluna
 
         #uppercase no campo Title
         df['title'] = df['title'].str.upper()
+
+        # issn: tirar caracter '-'
+        if 'issn' in df.columns:
+            df['issn'] = df['issn'].map(lambda x: x.replace('-','') if x == x else np.nan)
 
         return df  
 

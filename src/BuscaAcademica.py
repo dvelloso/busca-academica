@@ -29,7 +29,7 @@ class BuscaAcademica:
         # ler e tratar os arquivos
         for idx, val in enumerate(dir):
             print(f'Lendo arquivo: dados/CSV/{val} - {idx}')
-            df_tratado = arq_csv.tratar_arquivo(arq_csv.ler_arquivo(val))
+            df_tratado = arq_csv.tratar_arquivo(arq_csv.ler_arquivo(val), val)
             lista_df_csv_tratados.append(df_tratado)
 
         # unificar arquivos
@@ -37,7 +37,7 @@ class BuscaAcademica:
         # print('df_csv_unificado'); print(df_unificado.head)
 
         df_unificado = arq_csv.remover_duplicados(df_unificado)
-        print('df_csv_unificado removido duplicadas'); print(df_unificado.head)
+        print('df_csv_unificado removido duplicadas'); print(df_unificado.head); 
         
         return df_unificado
 
@@ -53,7 +53,7 @@ class BuscaAcademica:
             # ler arquivos
             for idx, val in enumerate(dir):
                 print(f'Lendo arquivo: dados/BIB/{val} - {idx}')
-                df_tratado =  arq_bib.tratar_arquivo(arq_bib.ler_arquivo(f'{x}/{val}'))
+                df_tratado =  arq_bib.tratar_arquivo(arq_bib.ler_arquivo(f'{x}/{val}'), val)
                 lista_df_bib_tratados.append(df_tratado)
 
         # unificar arquivos
@@ -69,7 +69,12 @@ class BuscaAcademica:
         print('df_unificado_csv -> '); print(df_csv)
         print('df_unificado_bib -> ');print(df_bib)
 
-        df_unificado_csv_bib = pd.merge(df_csv, df_bib, on='title')
+        df_unificado_csv_bib = pd.merge(df_csv, df_bib, on='issn')
+
+        df_unificado_csv_bib.drop_duplicates(inplace=True)
+
+        df_unificado_csv_bib.rename(columns={'title_x':'title_csv'}, inplace=True)
+        df_unificado_csv_bib.rename(columns={'title_y':'title_bib'}, inplace=True)
 
         print('df_unificado_bib_csv -> '); print(df_unificado_csv_bib)
 
@@ -97,11 +102,11 @@ class BuscaAcademica:
 
         filtro_query = filtro_query.replace('### &','')
         print(filtro_query)    
-        df = df.query(filtro_query)
+        df = df.query(filtro_query, inplace=False)
 
         return df
 
-    def exportar_arquivo(self, df):
+    def exportar_arquivo(self, df, tipo):
         formato_valido = False
         if self.formato_arquivo == 'json':
             df = df.to_json(orient='split')
@@ -119,7 +124,7 @@ class BuscaAcademica:
             formato_valido = True
 
         if formato_valido:
-            arq = open(f'resultados/arquivo.{self.formato_arquivo}', 'w', encoding='utf-8')
+            arq = open(f'resultados/arquivo{tipo}.{self.formato_arquivo}', 'w', encoding='utf-8')
             arq.write(df)
             arq.close
 
