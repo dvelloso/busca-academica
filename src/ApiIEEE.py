@@ -38,7 +38,7 @@ class ApiIEEE:
         
         total_registros = r.json()['total_records']
         numero_consultas = self.get_numero_consultas(total_registros)
-        print(f'API-IEEE -> 0/{numero_consultas}-{url}')
+        print(f'API-IEEE->0/{numero_consultas}-{url}')
 
         dict_df = r.json()
         dict_df = dict_df['articles']
@@ -53,7 +53,7 @@ class ApiIEEE:
 
                 start_record = 1 + (numero_consulta*200)
                 url = self.get_url_tratada(start_record)
-                print(f'API-IEEE -> {numero_consulta}/{numero_consultas}-{url}')
+                print(f'API-IEEE->{numero_consulta}/{numero_consultas}-{url}')
 
                 r = requests.get(url)
                 dict_df = r.json()

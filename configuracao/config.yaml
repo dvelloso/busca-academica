@@ -22,6 +22,6 @@ api:
   filtro: data+quality+AND+big+data
   ieee: 
     url: http://ieeexploreapi.ieee.org/api/v1/search/articles?format=json&apikey=2ry5drreqneft9t8tdn5xyuz&max_records=200
-  total_consultas: 5
+  total_consultas: 
 
 

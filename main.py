@@ -1,5 +1,6 @@
 from src.ArquivoCSV import ArquivoCSV
 from src.BuscaAcademica import BuscaAcademica
+import sqlite3
 
 if __name__ == "__main__":
     
@@ -27,4 +28,5 @@ if __name__ == "__main__":
     # exportar
     busca.exportar_arquivo(df_unificado, '_final')
 
-    # TODO gravar resultado em banco de dados
+    # gravar resultado em banco de dados
+    busca.gravar_resultado_bd(df_unificado)

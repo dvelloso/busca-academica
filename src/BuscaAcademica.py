@@ -1,10 +1,12 @@
 from src.ArquivoCSV import ArquivoCSV
 from src.ArquivoBib import ArquivoBib
 from src.ApiIEEE import ApiIEEE
+from src.BancoDadosHelper import BancoDadosHelper
 import os
 import pandas as pd
 import json
 import yaml
+import sqlite3
 
 class BuscaAcademica:
 
@@ -68,7 +70,7 @@ class BuscaAcademica:
 
     def executar_unificado(self, df_csv, df_bib):
         print('df_unificado_csv -> '); print(df_csv)
-        print('df_unificado_bib -> ');print(df_bib)
+        print('df_unificado_bib -> '); print(df_bib)
 
         df_unificado_csv_bib = pd.merge(df_csv, df_bib, on='issn')
 
@@ -151,6 +153,12 @@ class BuscaAcademica:
 
         return df_unificado
 
+    def gravar_resultado_bd(self, df):
+        # df.to_sql(name='resultados', con=BancoDadosHelper.get_connection)
+        conn = sqlite3.connect('bd_busca_academica.db')
+        df.to_sql(name='resultado', con=conn, if_exists='replace')
+
+        print('Arquivo gravado com sucesso no banco de dados')
 
     @property
     def arquivo_config(self):
